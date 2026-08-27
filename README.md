@@ -1,77 +1,102 @@
 # University of Basel Beamer Template
 
-A clean, modern **Beamer presentation template** adapted for the **University of Basel**, designed for scientific talks, seminars, defenses, and conference presentations.
+A **Beamer template** for University of Basel talks: seminars, conference
+presentations and defences.
 
-This template is opinionated in the right places: it follows Uni Basel visual identity constraints, supports multiple color themes (including a mint variant), and is optimized for **clarity, readability, and professional academic use**.
+The theme is opinionated where it matters. A physics talk is sparse text, one
+idea per slide, an equation or a figure as the anchor, and a literature
+reference in the corner — so the template gives you those and gets out of the
+way. No navigation bars, no accent stripes, no logo competing with the frame
+title. Basel red is reserved for emphasis and is never used as decoration.
 
 ---
 
 ## Features
 
-### 🎓 University of Basel Branding
+### University of Basel branding
 
-* Official **Uni Basel logo** (black / white variants, automatically switched by theme)
-* Complete **Uni Basel color palette** defined in `unibaselcolor.sty` (all official colors available, even if unused)
-* Sensible typography choices (Caladea + Carlito: Cambria/Calibri-compatible)
+* Official **Uni Basel logo** (black / white variants, switched with the theme)
+* Complete **Uni Basel palette** in `unibaselcolor.sty`, with semantic aliases
+  (`unibasData`, `unibasModel`) so slides, poster and paper agree on colour
+* **Caladea + Carlito** (metric-compatible Cambria / Calibri clones): serif for
+  headings, sans for body, mirroring the corporate Georgia + Arial pairing
 
-### 🎨 Multiple Theme Variants
-
-* **White (default)** – light, clean slides for most talks
-* **Red** – brand-forward, high-contrast section / chapter slides
-* **Mint** – modern, calm theme using mint backgrounds with petrol/turquoise accents
-
-Switch themes easily in your preamble:
+### Theme variants
 
 ```tex
-\themecolor{white} % or red, mint
+\themecolor{white} % or mint, red
 ```
 
-### 🧱 Thoughtful Slide Layouts
+* **white** — the working theme for content slides
+* **mint** — dividers, outline slides, the closing slide
+* **red** — a full-bleed impact variant, used sparingly
 
-* 16:9 aspect ratio enforced
-* Minimal headline with Uni Basel logo (size tuned for non-intrusive branding)
-* Clean frametitles without automatic section subtitles (no visual clutter)
-* Rounded blocks with consistent spacing
+### Slide layouts
 
-### 📑 Section & Structure Support
+* 16:9 by default (`\documentclass[aspectratio=43]{unibaselbeamer}` to override)
+* Corporate **title slide**: mint band, title inside it, funder logos below
+* Frame title flush with the body margin, with an optional subtitle naming the
+  sub-topic
+* Footline: motto on the left, frame number on the right
+* `chapter` — full-colour divider with an image clipped into a wedge
+* `sidepic` — text on the left, an image bleeding off the right edge
+* `\sectionslide[subtitle]{Name}` — a divider carrying only the section name
 
-* Automatic **Table of Contents slides** at section breaks (customizable)
-* Optional full-screen or split-image **chapter slides**
-* Side-image slide environment for visual storytelling
+### House-style build helpers
 
-### 📚 Citations as Slide Footnotes (APS-friendly)
-
-* Designed to work seamlessly with **`biblatex` + `biber`**
-* Supports citations as **footnotes**, ideal for talks:
+Three devices mark what is new on a slide, and nothing else:
 
 ```tex
-Some important result.\footfullcite{jarzynski1997nonequilibrium}
+\term{\bm{B}_m\cdot\bm{S}}          % red rule under the term being discussed
+\keybox[0.6\linewidth]{statement}   % thin red frame around what just landed
+\ghost{not yet in play}             % greyed out
+\reveal<3>{revealed on overlay 3}   % greyed out until overlay 3
 ```
 
-* APS-like formatting via:
+### References
+
+Two ways, both bottom-left and small:
 
 ```tex
-style=phys, citestyle=numeric
+\slidecite{N.~G.~Nguyen et al.\ \emph{Enhanced Electron-Spin Coherence in a
+  GaAs Quantum Emitter}, Phys.\ Rev.\ Lett.\ \textbf{131}, 210805 (2023)}
+
+Some important result.\footfullcite{nguyen2023enhanced}
 ```
 
-### 🏛 Funding Acknowledgement
+`\slidecite` is free-form and needs no bibliography. `\footfullcite` uses
+`biblatex` + `biber` with APS-like formatting (`style=phys`), set up in
+`customize.tex`. Put `\footfullcite` outside a `columns` environment: inside
+one, the footnote is set at the foot of the column instead of the slide.
 
-* **SNSF logo** included and shown **only on the title slide**, alongside Uni Basel
+### Backup slides
+
+```tex
+\backmatter[Soon on arXiv]   % "Thanks! Questions?"
+
+\backupbegin
+  ... backup frames ...
+\backupend                   % restores the frame count
+```
 
 ---
 
-## File Structure
+## File structure
 
 ```
 .
-├── main.tex                  % Example presentation (entry point)
-├── beamerthemeunibasel.sty  % Main Beamer theme
-├── unibaselcolor.sty        % Uni Basel color palette (all official colors)
+├── main.tex                 % Example presentation (entry point)
+├── customize.tex            % Bibliography, structure slides, helper macros
+├── unibaselbeamer.cls       % Thin wrapper class
+├── beamerthemeunibasel.sty  % The theme
+├── unibaselcolor.sty        % Uni Basel palette
+├── refs.bib                 % Example bibliography
 ├── images/
 │   ├── unibas_logo_black.png
 │   ├── unibas_logo_white.png
-│   └── SNSF_logo.pdf
-├── refs.bib                 % Example bibliography file
+│   ├── SNSF_logo.pdf
+│   ├── background.png       % demo image for chapter / sidepic
+│   └── default.jpg          % demo image for \titlebackground
 └── README.md
 ```
 
@@ -79,66 +104,48 @@ style=phys, citestyle=numeric
 
 ## Usage
 
-1. Copy the repository into your project directory
-2. Compile using `pdflatex + biber`
+Copy the repository into your project directory and compile with
+`pdflatex` + `biber`:
 
 ```bash
-pdflatex main
-biber main
-pdflatex main
-pdflatex main
+latexmk -pdf main.tex
 ```
 
-3. Start editing `main.tex`
+or, by hand:
+
+```bash
+pdflatex main && biber main && pdflatex main && pdflatex main
+```
+
+`biber` is only needed if you use `\footfullcite` / `\bibliographypage`.
 
 ---
 
-## Customization Tips
+## Customisation
 
-* **Footline**: enable or disable per slide using
-
-  ```tex
-  \footlinecolor{unibasTurquoise} % or empty {}
-  ```
-
-* **Logos**: logo size and placement are defined centrally in `beamerthemeunibasel.sty`
-
-* **Colors**: all Uni Basel colors are predefined; feel free to create additional variants using `\themecolor{...}`
+* **Footline** — `\footlinecolor{}` for the default subtle footline, or
+  `\footlinecolor{unibasPetrol}` for a coloured band (blocks follow suit)
+* **Logo on content slides** — off by default; `\slidelogo{on}` puts a small
+  mark in the top right corner
+* **Motto** — `\UNIBASELmotto{Department of Physics}`
+* **Title background** — `\titlebackground{images/default.jpg}` for a
+  full-bleed image, `\titlebackground*{...}` for the split variant; either one
+  replaces the mint band
+* **Fonts** — set in the theme. Do **not** load `lmodern` or another font
+  package from `customize.tex`: it silently overrides the Caladea/Carlito
+  pairing.
 
 ---
 
 ## Credits
 
-This template is **adapted from and inspired by** the excellent:
-
-> **Harbin Institute of Technology (HIT) Beamer Presentation Theme**
-> Available on Overleaf:
-> [https://www.overleaf.com/latex/templates/harbin-institute-of-technology-hit-beamer-presentation-theme/prwxqwfdzkqj](https://www.overleaf.com/latex/templates/harbin-institute-of-technology-hit-beamer-presentation-theme/prwxqwfdzkqj)
-
-The original HIT theme by *Federico Zenith* provided the structural foundation (layout logic, chapter/sidepic ideas), which has been **extensively modified** to:
-
-* match University of Basel branding,
-* modernize typography and color usage,
-* simplify slide structure for scientific presentations,
-* and add robust citation/footnote support.
-
-All remaining adaptations are specific to the University of Basel and academic use cases.
-
----
+Adapted from the
+[Harbin Institute of Technology (HIT) Beamer theme](https://www.overleaf.com/latex/templates/harbin-institute-of-technology-hit-beamer-presentation-theme/prwxqwfdzkqj),
+which in turn builds on the SINTEF Beamer theme by *Federico Zenith*. The
+structural foundation (chapter / sidepic ideas, wrapper class) comes from
+there; branding, typography, palette, build helpers and citation handling are
+specific to this template.
 
 ## License
 
-This template follows the license of the original HIT Beamer theme.
-Please check the upstream template for licensing details before redistribution.
-
----
-
-## Feedback & Contributions
-
-Suggestions, improvements, and refinements are welcome—especially regarding:
-
-* accessibility and contrast
-* additional theme variants
-* Beamer edge cases for large collaborations or long talks
-
-Happy presenting!
+See `LICENSE`, and check the upstream template before redistributing.

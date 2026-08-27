@@ -1,39 +1,169 @@
 \documentclass{unibaselbeamer}
 
-% Theme variants: white (default), mint, red
-\themecolor{white} % Mint accent variant
-% Optional: show a subtle footline that matches the accent
-% \footlinecolor{unibasTurquoise}
+% Theme variants: white (default), mint, red.
+% white is the working theme; mint carries the dividers, outline and closing
+% slide; red is a full-bleed impact variant, used sparingly.
+\themecolor{white}
 
-% Optional: load your personal customizations (TOC slides, helper macros, etc.)
+% Optional: a coloured footline band (blocks pick up the same colour).
+% \footlinecolor{unibasPetrol}
+
+% Optional: a small logo in the top right of every content slide.
+% \slidelogo{on}
+
+% Personal customisations: bibliography, structure slides, helper macros.
 \input{customize.tex}
 
 % meta-data
 \title{The role of entropy in Beamer themes}
-\author{Your Name}
-\date{\today}
+\subtitle{A template that stays out of the way}
+\author{Your Name --- Quantum Thermodynamics Group Basel}
+\date{27.08.2026}
 
 \begin{document}
 
 \maketitle
 
-\begin{frame}{Outline}
-  \tableofcontents
+% \outlineslide   % a contents slide with nothing highlighted; \AtBeginSection
+%                  % already opens each section with the outline.
+
+\section{Motivation}
+
+\begin{frame}{Solid-state qubits}{The environment sets the coherence time}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{itemize}
+        \item $N = 10^{4}-10^{5}$ nuclear spin bath
+        \item Huge pure dephasing, $T_2^{*} = 3.9$~ns
+        \item Bath engineering enhances qubit coherence
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/background.png}
+    \end{column}
+  \end{columns}
+
+  \slidecite{%
+    N.~G.~Nguyen et al.\ \emph{Enhanced Electron-Spin Coherence in a GaAs
+    Quantum Emitter}, Phys.\ Rev.\ Lett.\ \textbf{131}, 210805 (2023)\\
+    D.~M.~Jackson et al.\ \emph{Optimal Purification of a Spin Ensemble by
+    Quantum-Algorithmic Feedback}, Phys.\ Rev.\ X \textbf{12}, 031014 (2022)}
 \end{frame}
 
-\section{Introduction}
-\begin{frame}{A first slide}
+\section{Building a slide}
+
+\begin{frame}{One idea, revealed one step at a time}{Progressive build}
+  Duplicate the slide, add one element, keep the title. Three devices mark what
+  is new, and nothing else:
+
   \begin{itemize}
-    \item Mint theme uses petrol for structure and turquoise for block headers.
-    \item Alert text is Basel red: \alert{important}.
-    \item Links appear in petrol: \hrefcol{https://www.unibas.ch}{unibas.ch}
+    \item<1-> A \term{red underline} under the term being discussed
+    \item<2-> A thin red box around the statement that just landed
+    \item<3-> Greying out what is not yet in play
   \end{itemize}
 
-  \begin{block}{A block}
-    This is a regular block.
-  \end{block}
+  \vspace{1ex}
+  \onslide<2->{\keybox[0.6\linewidth]{Aligned $m \to m+1$, anti-aligned $m \to m-1$}}
+
+  \vspace{1ex}
+  \reveal<3>{This line is greyed out until the third overlay.}
 \end{frame}
 
-\backmatter
+\begin{frame}{The equation is the anchor}{Master equation}
+  A content slide carries one anchor --- an equation, a figure or a schematic ---
+  never two.
+
+  \begin{equation*}
+    \partial_t \rho_m
+      = -i\left[\term{\bm{B}_m\cdot\bm{S}},\rho_m\right]
+        + \Gamma_m^{+}\mathcal{D}[\sigma^{\dagger}]\rho_m
+        + \Gamma_m^{-}\mathcal{D}[\sigma]\rho_m
+  \end{equation*}
+
+  \begin{itemize}
+    \item $\rho_S = \sum_m \rho_m$, with $\mathrm{tr}\,\rho_m = P_m$
+    \item Symbols are defined before they are used
+  \end{itemize}
+
+  \slidecite{A.~Riera-Campeny, A.~Sanpera, P.~Strasberg, \emph{Quantum systems
+    correlated with a finite bath}, PRX Quantum \textbf{2}, 010340 (2021)}
+\end{frame}
+
+\begin{frame}{Blocks, alerts and links}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{A block}
+        Quiet by design: a tinted panel with a petrol heading, never a
+        full-width coloured bar.
+      \end{block}
+
+      \begin{alertblock}{An alert block}
+        Basel red is the highlight colour. One emphasis per slide wins.
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}
+        \item Alert text is Basel red: \alert{important}
+        \item Links are petrol: \hrefcol{https://www.unibas.ch}{unibas.ch}
+        \item Blocks stay tinted, never barred
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  % A footnote citation belongs outside the columns: inside one, biblatex sets
+  % it at the foot of the column instead of the foot of the slide.
+  \vspace{1ex}
+  Citations can also be footnotes.\footfullcite{nguyen2023enhanced}
+\end{frame}
+
+\begin{chapter}[images/background.png]{unibasPetrol}{A chapter slide}
+  The \texttt{chapter} environment fills the slide with one colour and clips an
+  image into the right-hand wedge.
+\end{chapter}
+
+\begin{sidepic}{images/background.png}{A slide with a side picture}
+  \begin{itemize}
+    \item The \texttt{sidepic} environment bleeds an image off the right edge
+    \item Text keeps the left 55\,\% of the slide
+  \end{itemize}
+\end{sidepic}
+
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item One idea per slide, one anchor, at most four bullets
+    \item Red marks what is new; petrol carries the structure
+    \item Every borrowed result gets its reference in the corner
+    \item Backup slides live after the closing slide
+  \end{itemize}
+\end{frame}
+
+\backmatter[Template at github.com/marcelojbp/UniBaselBeamerTemplate]
+
+% ---------------------------------------------------------------- backup ----
+\backupbegin
+
+\begin{frame}{Backup: the colour palette}
+  \begin{center}
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      \# & Name & Macro & Use \\
+      \midrule
+      1 & Mint       & \texttt{unibasMint}       & Title band, dividers \\
+      2 & Turquoise  & \texttt{unibasTurquoise}  & Secondary accent \\
+      3 & Anthracite & \texttt{unibasAnthracite} & Body text \\
+      5 & Basel red  & \texttt{unibasRed}        & Emphasis, data \\
+      8 & Petrol     & \texttt{unibasPetrol}     & Structure, model \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\nocite{*}
+\bibliographypage
+
+\backupend
 
 \end{document}

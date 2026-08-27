@@ -1,61 +1,94 @@
-% packages, font, color, and new commands
-\usepackage{amsfonts, amsmath, oldgerm, lmodern, animate}
-\usepackage{verbatim}
+% -----------------------------------------------------------------------------
+% Personal customisations: extra packages, structure slides, helper macros.
+% Loaded from main.tex with \input{customize.tex}.
+%
+% Nothing here may change the theme's fonts.  Loading lmodern (or any other
+% font package) after the theme silently overrides the Caladea/Carlito pairing
+% the theme sets up, which is why it is not loaded.
+% -----------------------------------------------------------------------------
+
+\usepackage{amsmath,amssymb}
 \usepackage{bm}
-\usefonttheme{serif}
+\usepackage{booktabs}
+\usepackage{listings}
 
-% TYPESETTING ELEMENTS
+% -----------------------------------------------------------------------------
+% Bibliography (APS-like, citations as slide footnotes)
+% -----------------------------------------------------------------------------
+\usepackage[backend=biber,style=phys,citestyle=numeric,
+            giveninits=true,maxbibnames=3,minbibnames=1,
+            articletitle=true]{biblatex}
+\addbibresource{refs.bib}
 
-% style of section presented in the table of contents
+% Footnote citations on slides: small, unobtrusive, no separating rule.
+\renewcommand*{\bibfont}{\scriptsize}
+\setbeamertemplate{bibliography item}{}
+\setbeamerfont{footnote}{size=\tiny}
+\setbeamercolor{footnote}{fg=unibasGrey}
+\setbeamercolor{footnote mark}{fg=unibasGrey}
+\renewcommand*{\footnoterule}{}
+
+% -----------------------------------------------------------------------------
+% Structure slides
+% -----------------------------------------------------------------------------
+
+% Table of contents: one line per section, subsections hidden.
 \setbeamertemplate{section in toc}{$\blacktriangleright$~\inserttocsection}
-
-% style of subsection presented in the table of contents
+\setbeamertemplate{section in toc shaded}[default][30]
 \setbeamertemplate{subsection in toc}{}
-% \setbeamertemplate{subsection in toc}{\footnotesize\hspace{1.2 em}$\blacktriangleright$~\inserttocsubsection}
 
-% automate subtitle of each frame
-\makeatletter
-    \pretocmd\beamer@checkframetitle{\framesubtitle{\thesection \, \secname}}
-\makeatother
-
-% avoid numbering of frames that are breaked into multiply slides
+% Frames broken over several slides are not numbered "(cont.)".
 \setbeamertemplate{frametitle continuation}{}
 
-% at the begining of section, add table of contents with the current section highlighted
-\AtBeginSection[]
-{
-    \begingroup
-    \setbeamertemplate{footline}{}
-    \themecolor{mint}
-    \begin{frame}{Table of Contents}
-        \tableofcontents[currentsection]
-    \end{frame}
-    \endgroup
+% A standalone contents slide, with no section highlighted.  Use it once, after
+% the title slide; \AtBeginSection takes over from there.
+\newcommand{\outlineslide}{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
+  \themecolor{mint}
+  \begin{frame}[plain]{Outline}
+    \tableofcontents
+  \end{frame}
+  \endgroup
 }
 
-% at the beginning of subsection, add subsection title page
-\AtBeginSubsection[]
-{
-    \begin{frame}{\,}{\thesection \, \secname}
-        \fontfamily{ptm}\selectfont
-        \centering\textsl{\textbf{\textcolor{unibasRed}{
-            \large Section \thesection.\thesubsection
-            \vskip15pt
-            \LARGE \subsecname
-        }}}
-    \end{frame}
+% Each section opens with the outline, current section highlighted.
+\AtBeginSection[]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
+  \themecolor{mint}
+  \begin{frame}[plain]{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+  \endgroup
 }
 
-% code bolck setting
-\definecolor{codegreen}{RGB}{101,218,120}
+% Each subsection opens with its own divider slide.
+\AtBeginSubsection[]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
+  \begin{frame}[plain,c]
+    \centering
+    {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
+     \smallcapsline{Section \thesection.\thesubsection}\par}
+    \vspace{1.5ex}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\subsecname\par}
+  \end{frame}
+  \endgroup
+}
+
+% -----------------------------------------------------------------------------
+% Code listings
+% -----------------------------------------------------------------------------
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
-\lstdefinestyle{mystyle}{
-    % backgroundcolor=\color{backcolour},
+\lstdefinestyle{unibasel}{
     commentstyle=\color{unibasPetrol},
-    keywordstyle=\color{magenta},
+    keywordstyle=\color{unibasRed},
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
     basicstyle=\ttfamily\scriptsize,
@@ -72,63 +105,57 @@
     xleftmargin=10pt,
     xrightmargin=10pt,
 }
+\lstset{style=unibasel}
 
-\lstset{style=mystyle}
+% -----------------------------------------------------------------------------
+% Helper macros
+% -----------------------------------------------------------------------------
 
-% NEW COMMANDS
-
-% set colored hyperlinks command
+% Coloured hyperlinks
 \newcommand{\hrefcol}[2]{\textcolor{unibasPetrol}{\href{#1}{#2}}}
 \newcommand{\hlinkcol}[1]{\hrefcol{#1}{#1}}
 
-
-% centering paragraph statement
-\newcommand{\centerstate}[1]{
-    \centering
-    \begin{columns}
-        \begin{column}{0.8\textwidth}
-            #1
-        \end{column}
-    \end{columns}
+% Centred, narrower paragraph (a statement that should not run edge to edge)
+\newcommand{\centerstate}[1]{%
+  \centering
+  \begin{columns}
+    \begin{column}{0.8\textwidth}
+      #1
+    \end{column}
+  \end{columns}%
 }
 
-% colored textbf
+% Coloured emphasis.  \c... is Basel red (the highlight colour),
+% \b... is petrol (structure).  Use sparingly: on a slide, one emphasis wins.
 \newcommand{\ctextbf}[1]{\textbf{\textcolor{unibasRed}{#1}}}
 \newcommand{\btextbf}[1]{\textbf{\textcolor{unibasPetrol}{#1}}}
-
-% colored textsl
 \newcommand{\ctextsl}[1]{\textsl{\textcolor{unibasRed}{#1}}}
 \newcommand{\btextsl}[1]{\textsl{\textcolor{unibasPetrol}{#1}}}
-
-% colored emph
 \newcommand{\cemph}[1]{\emph{\textcolor{unibasRed}{#1}}}
 \newcommand{\bemph}[1]{\emph{\textcolor{unibasPetrol}{#1}}}
 
-% about page
-\newcommand{\aboutpage}[2]{
-    \begingroup
-    \setbeamertemplate{footline}{}
-    \themecolor{mint}
-    \begin{frame}[c]{#1}{\,}
-        \centering
-        \begin{minipage}{\textwidth}
-            \usebeamercolor[fg]{normal text}
-            \centering
-            \Large \textsl{\normalsize #2}
-        \end{minipage}
-    \end{frame}
-    \endgroup
+% About / acknowledgement page
+\newcommand{\aboutpage}[2]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
+  \themecolor{mint}
+  \begin{frame}[plain,c]{#1}
+    \centering
+    \begin{minipage}{0.85\textwidth}
+      \usebeamercolor[fg]{normal text}
+      \centering #2
+    \end{minipage}
+  \end{frame}
+  \endgroup
 }
 
-% bibliography page
-\newcommand{\bibliographpage}{
-    \section{References}
-
-    \begingroup
-    \themecolor{mint}
-    \begin{frame}[allowframebreaks]{References}{\,}
-        \tiny
-        \printbibliography[heading=none]
-    \end{frame}
-\endgroup
+% Bibliography slide
+\newcommand{\bibliographypage}{%
+  \begingroup
+  \themecolor{mint}
+  \begin{frame}[allowframebreaks,plain]{References}
+    \printbibliography[heading=none]
+  \end{frame}
+  \endgroup
 }

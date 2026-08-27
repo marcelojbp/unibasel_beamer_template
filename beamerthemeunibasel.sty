@@ -1,134 +1,190 @@
 % Beamer theme for the University of Basel.
 % Adapted from the SINTEF Beamer theme (Federico Zenith).
+%
+% Design brief: a physics talk is sparse text, one idea per slide, an equation
+% or a figure as the anchor, and a literature reference in the corner.  The
+% theme therefore stays out of the way: no navigation bars, no accent stripes,
+% no logo on content slides.  Basel red is reserved for emphasis, never used
+% as decoration.
 
-\ProvidesPackage{beamerthemeunibasel}[2026/01/06]
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeunibasel}[2026/08/27 Uni Basel beamer theme]
 
 \RequirePackage{etoolbox}
+\RequirePackage{environ}
 \RequirePackage{tikz}
-\RequirePackage{listings}
+\RequirePackage[T1]{fontenc}
 
-% Force 16:9 aspect ratio
-\RequirePackage{geometry}
-\geometry{paperwidth=16cm,paperheight=9cm}
-
-% Caladea is a Cambria clone, Carlito a Calibri clone
+% Caladea is a Cambria clone, Carlito a Calibri clone.  The corporate template
+% pairs a serif for headings with a sans for body text (Georgia + Arial); these
+% two are the metric-compatible free equivalents.
 \RequirePackage{caladea,carlito}
 \renewcommand{\familydefault}{\sfdefault}
+% Letterspacing (used for the small-caps-style subtitles) and better typesetting.
+\RequirePackage{microtype}
 
 \RequirePackage{graphicx,unibaselcolor}
 
-% No navigation symbols
+% No navigation symbols, no per-frame clutter.
 \setbeamertemplate{navigation symbols}{}
 
-% -----------------------------------------------------------------------------
-% Footline
-% -----------------------------------------------------------------------------
-\newcommand{\@footlinepayoff}{\@UNIBASELmotto}
-\setbeamertemplate{footline}{%
-  \begin{beamercolorbox}[wd=\textwidth,ht=5mm,dp=3mm,rightskip=1cm]{footline}
-  \usebeamerfont{footline}\hfill\@footlinepayoff
-  \end{beamercolorbox}
-}
+% Slightly wider text block than the beamer default; the frame title and the
+% body then share one left margin.
+\newlength{\unibasmargin}
+\setlength{\unibasmargin}{8mm}
+\setbeamersize{text margin left=\unibasmargin,text margin right=\unibasmargin}
 
-% Coordinate blocks with footline colour
-\newcommand{\footlinecolor}[1]{% if #1 is empty, makes footline transparent
-  \ifstrempty{#1}{%
-    \renewcommand{\@footlinepayoff}{}
-    \setbeamercolor{footline}{bg=}
-    \setbeamercolor{block title}{fg=unibasWhite,bg=unibasRed}
-    \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasPaper}
-  }{%
-    \renewcommand{\@footlinepayoff}{\@UNIBASELmotto}
-    \setbeamercolor{footline}{fg=unibasWhite,bg=#1}
-    \setbeamercolor{block title}{fg=unibasWhite,bg=#1}
-    \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasPaper}
-  }%
-}
-\footlinecolor{} % Default: no footline
+% Neither Caladea nor Carlito ships small caps, so the small-caps lines of the
+% corporate decks (frame subtitles, divider sublines) are set as letterspaced
+% uppercase instead.  Same texture, no font substitution warnings.
+\newcommand{\smallcapsline}[1]{\textls[60]{\MakeUppercase{#1}}}
+
+% Motto shown at the bottom left of every content slide.  Defined before its
+% first use so that the footline template never expands an undefined macro.
+\newcommand{\@UNIBASELmotto}{University of Basel}
+\newcommand{\UNIBASELmotto}[1]{\renewcommand{\@UNIBASELmotto}{#1}}
 
 % -----------------------------------------------------------------------------
 % Logos
 % -----------------------------------------------------------------------------
 \pgfdeclareimage[width=0.075\paperwidth]{unibaslogo}{images/unibas_logo_black}
 \pgfdeclareimage[width=0.075\paperwidth]{unibaslogowhite}{images/unibas_logo_white}
-\pgfdeclareimage[height=0.09\paperheight]{snsflogo}{images/SNSF_logo}
 \newcommand{\@UNIBASELlogo}{unibaslogo}
+
+% Content slides carry no logo by default: the corporate deck brands the title
+% slide and then gets out of the way.  \slidelogo{on} restores a small mark in
+% the top right corner if a venue requires it.
+\newbool{unibas@slidelogo}
+\boolfalse{unibas@slidelogo}
+\newcommand{\slidelogo}[1]{%
+  \ifstrequal{#1}{on}{\booltrue{unibas@slidelogo}}{\boolfalse{unibas@slidelogo}}%
+}
+
+\setbeamertemplate{headline}{%
+  \ifbool{unibas@slidelogo}{%
+    \vspace{2mm}\hfill\pgfuseimage{\@UNIBASELlogo}\hspace{\unibasmargin}%
+  }{}%
+}
+
+% -----------------------------------------------------------------------------
+% Footline: motto on the left, frame number on the right
+% -----------------------------------------------------------------------------
+\newcommand{\@footlinepayoff}{\@UNIBASELmotto}
+
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.4mm,dp=2.6mm,%
+                         leftskip=\unibasmargin,rightskip=\unibasmargin]{footline}%
+    \usebeamerfont{footline}\@footlinepayoff\hfill\insertframenumber%
+  \end{beamercolorbox}%
+}
+
+% \footlinecolor{}            subtle footline, no background (default)
+% \footlinecolor{unibasPetrol} coloured band; blocks pick up the same colour
+\newcommand{\footlinecolor}[1]{%
+  \ifstrempty{#1}{%
+    \setbeamercolor{footline}{fg=unibasGrey,bg=}%
+    \setbeamercolor{block title}{fg=unibasPetrol,bg=unibasLightGrey!25}%
+    \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasLightGrey!25}%
+  }{%
+    \setbeamercolor{footline}{fg=unibasWhite,bg=#1}%
+    \setbeamercolor{block title}{fg=unibasWhite,bg=#1}%
+    \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasPaper}%
+  }%
+}
 
 % -----------------------------------------------------------------------------
 % Theme switching
 % -----------------------------------------------------------------------------
-% NOTE: Beamer colors should be set in the preamble.
+% NOTE: Beamer colours must be set in the preamble.
 \newcommand{\themecolor}[1]{%
   % Usage: \themecolor{white} (default), \themecolor{mint}, \themecolor{red}
   %
   % Design note:
-  % - Mint is very light in the Uni Basel palette, so we use it mainly as a
-  %   *supporting* background tint, paired with Petrol/Turquoise for contrast.
+  % - white is the working theme; mint is for dividers, the outline and the
+  %   closing slide; red is a full-bleed impact variant, used sparingly.
   \ifstrequal{#1}{red}{%
-    % Dark, brand-forward variant
     \setbeamercolor{normal text}{fg=unibasWhite,bg=unibasRed}
     \setbeamercolor{structure}{fg=unibasWhite}
     \renewcommand{\@UNIBASELlogo}{unibaslogowhite}
 
     \setbeamercolor{title}{fg=unibasWhite}
+    \setbeamercolor{subtitle}{fg=unibasWhite}
     \setbeamercolor{author}{fg=unibasWhite}
     \setbeamercolor{date}{fg=unibasWhite}
+    \setbeamercolor{frametitle}{fg=unibasWhite}
+    \setbeamercolor{framesubtitle}{fg=unibasMint}
     \setbeamercolor{alerted text}{fg=unibasMint}
+    \setbeamercolor{slidecite}{fg=unibasMint}
 
     \setbeamercolor{block title}{fg=unibasRed,bg=unibasWhite}
     \setbeamercolor{block body}{fg=unibasWhite,bg=unibasRed}
   }{%
     \ifstrequal{#1}{mint}{%
-      % Mint variant (light, fresh, high-contrast)
       \setbeamercolor{normal text}{fg=unibasAnthracite,bg=unibasMint}
-      \setbeamercolor{structure}{fg=unibasBlack}
+      \setbeamercolor{structure}{fg=unibasPetrol}
       \renewcommand{\@UNIBASELlogo}{unibaslogo}
 
       \setbeamercolor{title}{fg=unibasBlack}
-      \setbeamercolor{author}{fg=unibasBlack}
-      \setbeamercolor{date}{fg=unibasBlack}
+      \setbeamercolor{subtitle}{fg=unibasAnthracite}
+      \setbeamercolor{author}{fg=unibasAnthracite}
+      \setbeamercolor{date}{fg=unibasAnthracite}
+      \setbeamercolor{frametitle}{fg=unibasBlack}
+      \setbeamercolor{framesubtitle}{fg=unibasPetrol}
       \setbeamercolor{alerted text}{fg=unibasRed}
+      \setbeamercolor{slidecite}{fg=unibasAnthracite}
 
-      % Blocks: strong header, soft mint body tint
-      \setbeamercolor{block title}{fg=unibasWhite,bg=unibasTurquoise}
-      \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasMint!15}
+      \setbeamercolor{block title}{fg=unibasWhite,bg=unibasPetrol}
+      \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasMint!25}
     }{%
       % Light, clean variant (default)
       \setbeamercolor{normal text}{fg=unibasAnthracite,bg=unibasWhite}
-      \setbeamercolor{structure}{fg=unibasBlack}
+      \setbeamercolor{structure}{fg=unibasPetrol}
       \renewcommand{\@UNIBASELlogo}{unibaslogo}
 
       \setbeamercolor{title}{fg=unibasBlack}
-      \setbeamercolor{author}{fg=unibasBlack}
-      \setbeamercolor{date}{fg=unibasBlack}
-      \setbeamercolor{alerted text}{fg=unibasPetrol}
+      \setbeamercolor{subtitle}{fg=unibasAnthracite}
+      \setbeamercolor{author}{fg=unibasAnthracite}
+      \setbeamercolor{date}{fg=unibasAnthracite}
+      \setbeamercolor{frametitle}{fg=unibasBlack}
+      \setbeamercolor{framesubtitle}{fg=unibasPetrol}
+      \setbeamercolor{alerted text}{fg=unibasRed}
+      \setbeamercolor{slidecite}{fg=unibasGrey}
 
-      \setbeamercolor{block title}{fg=unibasWhite,bg=unibasRed}
-      \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasPaper}
+      \setbeamercolor{block title}{fg=unibasPetrol,bg=unibasLightGrey!25}
+      \setbeamercolor{block body}{fg=unibasAnthracite,bg=unibasLightGrey!25}
     }%
   }%
 }
 \themecolor{white} % Default
+\footlinecolor{}   % Default: subtle footline
 
-
+% -----------------------------------------------------------------------------
 % Typography
-\setbeamerfont{author}{size=\scriptsize}
-\setbeamerfont{date}{size=\tiny}
-\setbeamerfont{title}{series=\bfseries}
-\setbeamerfont{subtitle}{series=\mdseries,size=\footnotesize}
-\setbeamerfont{frametitle}{series=\bfseries}
-\setbeamerfont{framesubtitle}{series=\mdseries}
-\setbeamerfont{footline}{size=\scriptsize}
-\setbeamerfont{block title}{series=\centering, size=\small}
-\setbeamerfont{block body}{size=\scriptsize}
+% -----------------------------------------------------------------------------
+% Headings are set in the serif (Caladea); body text stays sans (Carlito).
+\setbeamerfont{title}{family=\rmfamily,series=\bfseries,size=\LARGE}
+\setbeamerfont{subtitle}{family=\rmfamily,series=\mdseries,size=\large}
+\setbeamerfont{author}{size=\small}
+\setbeamerfont{date}{size=\footnotesize}
+\setbeamerfont{frametitle}{family=\rmfamily,series=\bfseries,size=\Large}
+\setbeamerfont{framesubtitle}{family=\rmfamily,series=\bfseries,size=\footnotesize}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{block title}{series=\bfseries,size=\normalsize}
+\setbeamerfont{block body}{size=\small}
+\setbeamerfont{slidecite}{size=\tiny}
+\setbeamerfont{itemize/enumerate subbody}{size=\small}
+\setbeamerfont{caption}{size=\footnotesize}
+\setbeamercolor{caption name}{fg=unibasPetrol}
 
-% Prettier blocks
+% Quiet blocks: a tinted panel, never a full-width coloured bar.
 \setbeamertemplate{blocks}[rounded]
+\setbeamercolor{alerted text}{fg=unibasRed}
 
 % Bullets
 \setbeamertemplate{itemize item}{\textbullet}
 \setbeamertemplate{itemize subitem}{\textemdash}
 \setbeamertemplate{itemize subsubitem}{\ensuremath{\circ}}
+\setbeamertemplate{caption}[numbered]
 
 \newenvironment{colorblock}[3][unibasWhite]{%
   \begingroup
@@ -141,49 +197,80 @@
 }
 
 % -----------------------------------------------------------------------------
-% Headline: logo top-left
+% Frame title and subtitle
 % -----------------------------------------------------------------------------
-\setbeamertemplate{headline}{%
-  \vspace{1.5mm}%
-  \hspace{0.06\textwidth}\pgfuseimage{\@UNIBASELlogo}%
+% Title flush with the body's left margin; the optional subtitle names the
+% sub-topic in small caps, as in the corporate decks.
+\setbeamertemplate{frametitle}{%
+  \vspace*{2.5ex}%
+  \begin{beamercolorbox}[wd=\textwidth,leftskip=0pt,rightskip=0pt plus 1fil]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\par
+    \ifx\insertframesubtitle\@empty\else
+      \vspace{0.6ex}%
+      {\usebeamercolor[fg]{framesubtitle}\usebeamerfont{framesubtitle}%
+       \smallcapsline{\insertframesubtitle}\par}%
+    \fi
+  \end{beamercolorbox}%
+  \vspace*{-1.5ex}%
 }
 
-% Frame title and subtitle layout
-\setbeamertemplate{frametitle}{%
-  \vspace*{-3.5ex}
-  \begin{beamercolorbox}[leftskip=2cm]{frametitle}%
-    \usebeamerfont{frametitle}\insertframetitle\\
-    % \usebeamerfont{framesubtitle}\insertframesubtitle
-  \end{beamercolorbox}
+% -----------------------------------------------------------------------------
+% House-style emphasis and build helpers
+% -----------------------------------------------------------------------------
+% Exactly three devices mark what is new on a slide: a red underline under the
+% term being discussed, a thin red box around the statement that just landed,
+% and greying out what is not yet in play.  Nothing else.
+
+% \term{...} — red rule under a term; the term keeps its own colour.
+% Works in text and in math: \term{\Gamma_m}, \term{finite bath}.
+\newcommand{\term}[1]{{\color{unibasRed}\underline{{\normalcolor #1}}}}
+
+% \keybox[<width>]{...} — thin red frame around a short statement.
+\newcommand{\keybox}[2][\linewidth]{%
+  \begin{tikzpicture}
+    \node[draw=unibasRed,line width=0.5pt,rounded corners=1.5pt,
+          inner sep=5pt,text width=#1-12pt,align=left]
+      {\usebeamercolor[fg]{normal text}#2};
+  \end{tikzpicture}%
+}
+
+% \ghost{...} — de-emphasise content that is not yet in play.
+\newcommand{\ghost}[1]{{\color{unibasGhost}#1}}
+
+% \reveal<n>{...} — greyed out before overlay n, normal from n onwards.
+% Without an overlay specification it reveals on the second overlay.
+\newcommand<>{\reveal}[1]{%
+  \ifstrempty{#2}%
+    {\temporal<2>{\ghost{#1}}{#1}{#1}}%
+    {\temporal#2{\ghost{#1}}{#1}{#1}}%
+}
+
+% \slidecite{...} — literature reference, bottom left, above the footline.
+% Author list (et al. past two), title in italics, journal, volume, page, year.
+\newcommand{\slidecite}[1]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south west,inner sep=0pt,align=left,
+          text width=0.86\paperwidth]
+      at ([shift={(\unibasmargin,7.5mm)}]current page.south west)
+      {\usebeamerfont{slidecite}\usebeamercolor[fg]{slidecite}#1};
+  \end{tikzpicture}%
 }
 
 % -----------------------------------------------------------------------------
 % Title page
 % -----------------------------------------------------------------------------
-\setbeamertemplate{title page}{
-  \vskip0pt plus 1filll
-  \hspace{-12mm}%
-  \begin{beamercolorbox}[wd=0.9\textwidth,sep=10pt,leftskip=8mm]{title}
-    {\usebeamerfont{title}\inserttitle}
-
-    {\usebeamerfont{subtitle}\insertsubtitle}
-
-    {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor}
-
-    {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate}
-
-    % \vspace{6mm}
-    % \hspace{5cm}
-  \end{beamercolorbox}
-  \vfill
-  \begin{tikzpicture}[remember picture, overlay]
-    \node[anchor=south east, inner sep=5mm] at (current page.south east) {%
-      \includegraphics[height=8mm]{images/SNSF_logo}%
-    };
-  \end{tikzpicture}
+% The corporate title slide is a mint band across the top with the title inside
+% it and the funder logos in the white strip below.  A \titlebackground image,
+% when given, replaces the band.
+\newbool{splittitle}
+\newcommand{\@TitleBackground}{}
+\newcommand{\titlebackground}{\@ifstar{\SplitBackground}{\FullBackground}}
+\newcommand{\FullBackground}[1]{\renewcommand{\@TitleBackground}{#1}}
+\newcommand{\SplitBackground}[1]{%
+  \booltrue{splittitle}%
+  \renewcommand{\@TitleBackground}{#1}%
 }
 
-% Background helpers (kept from original theme)
 \newcommand{\TikzSplitSlide}[1]{%
   \rule{0.4\paperwidth}{0pt}%
   \begin{tikzpicture}
@@ -197,18 +284,44 @@
   \end{tikzpicture}
 }
 
-\newbool{splittitle}
-\newcommand{\@TitleBackground}{}
-\newcommand{\titlebackground}{\@ifstar{\SplitBackground}{\FullBackground}}
-\newcommand{\FullBackground}[1]{\renewcommand{\@TitleBackground}{#1}}
-\newcommand{\SplitBackground}[1]{%
-  \booltrue{splittitle}%
-  \renewcommand{\@TitleBackground}{#1}%
+% Height of the mint band on the title slide.
+\newcommand{\@unibasbandheight}{0.72\paperheight}
+
+\setbeamertemplate{title page}{%
+  % Mint band, unless the user supplied a title background image.
+  \ifdefempty{\@TitleBackground}{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[unibasMint]
+        (current page.north west) rectangle
+        ([yshift=-\@unibasbandheight]current page.north east);
+    \end{tikzpicture}%
+  }{}%
+  \vspace*{0.26\paperheight}%
+  \begin{beamercolorbox}[wd=0.86\textwidth]{title}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+    \ifx\insertsubtitle\@empty\else
+      \vspace{1.2ex}%
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi
+    \vspace{2.4ex}
+    {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}
+    \vspace{0.6ex}
+    {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}
+  \end{beamercolorbox}
+  % Funder and institution logos, bottom left, in the white strip.
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south west,inner sep=0pt]
+      at ([shift={(\unibasmargin,6mm)}]current page.south west)
+      {\includegraphics[height=13mm]{images/unibas_logo_black}%
+       \hspace{7mm}%
+       \raisebox{2.5mm}{\includegraphics[height=8mm]{images/SNSF_logo}}};
+  \end{tikzpicture}%
 }
 
-\renewcommand{\maketitle}{
+\renewcommand{\maketitle}{%
 \begingroup
   \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
   \ifdefempty{\@TitleBackground}{}{% Skip if \@TitleBackground is empty
     \setbeamertemplate{background}{%
       \ifbool{splittitle}{%
@@ -218,69 +331,114 @@
       }
     }
   }
-  \begin{frame}%
-      \Large\titlepage%
+  \begin{frame}[plain,noframenumbering]%
+      \titlepage%
   \end{frame}%
 \endgroup
 }
 
 % -----------------------------------------------------------------------------
-% Chapter and sidepic environments (unchanged from upstream; colour names updated)
+% Section divider
 % -----------------------------------------------------------------------------
-\newenvironment{chapter}[3][]{% Args: image (optional), color, frame title
+% Same layout as the title slide, carrying only the section name.
+\newcommand{\sectionslide}[2][]{%
   \begingroup
-  \themecolor{mint}
   \setbeamertemplate{footline}{}
-  \setbeamercolor{frametitle}{fg=unibasWhite}
+  \setbeamertemplate{headline}{}
+  \themecolor{mint}
+  \begin{frame}[plain,c]
+    \centering
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}#2\par}
+    \ifstrempty{#1}{}{%
+      \vspace{1.5ex}%
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\smallcapsline{#1}\par}%
+    }%
+  \end{frame}
+  \endgroup
+}
+
+% -----------------------------------------------------------------------------
+% Chapter and sidepic environments (kept from upstream; colours updated)
+% -----------------------------------------------------------------------------
+% Both environments build a complete frame, so their body has to be captured
+% before it is typeset: beamer scans for a literal \end{frame}, which it cannot
+% find when that token comes from an environment's end code.  \NewEnviron
+% collects the body into \BODY and keeps the user-facing syntax unchanged.
+\NewEnviron{chapter}[3][]{% Args: image (optional), colour, frame title
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
   \setbeamercolor{normal text}{fg=unibasWhite,bg=#2}
+  \setbeamercolor{frametitle}{fg=unibasWhite}
+  \setbeamercolor{framesubtitle}{fg=unibasMint}
   \ifstrempty{#1}{}{\setbeamertemplate{background}{\TikzSplitSlide{#1}}}
   \setbeamertemplate{frametitle}{%
     \vspace*{8ex}
     \begin{beamercolorbox}[wd=0.45\textwidth]{frametitle}
-      \usebeamerfont{frametitle}\insertframetitle\\
-      \usebeamerfont{framesubtitle}\insertframesubtitle
+      \usebeamerfont{frametitle}\insertframetitle\par
+      \ifx\insertframesubtitle\@empty\else
+        \usebeamerfont{framesubtitle}\smallcapsline{\insertframesubtitle}\par
+      \fi
     \end{beamercolorbox}
   }
   \begin{frame}{#3}
-  \hspace*{0.05\textwidth}%
-  \minipage{0.35\textwidth}%
-  \usebeamercolor[fg]{normal text}%
-}{%
-  \endminipage
+    \begin{minipage}{0.40\textwidth}
+      \usebeamercolor[fg]{normal text}%
+      \BODY
+    \end{minipage}
   \end{frame}
   \endgroup
 }
 
-\newenvironment{sidepic}[2]{% Args: image, frame title
+\NewEnviron{sidepic}[2]{% Args: image, frame title
   \begingroup
+  % Bleed the picture off the right edge, clipped to the right-hand strip, so
+  % that a wide image cannot creep underneath the text column.
   \setbeamertemplate{background}{%
-    \hspace*{0.6\paperwidth}%
-    \includegraphics[height=\paperheight]{#1}%
+    \begin{tikzpicture}[remember picture,overlay]
+      \clip ([xshift=0.6\paperwidth]current page.north west)
+            rectangle (current page.south east);
+      \node[anchor=east,inner sep=0pt] at (current page.east)
+        {\includegraphics[height=\paperheight]{#1}};
+    \end{tikzpicture}%
   }
   \begin{frame}{#2}
-  \begin{columns}
-    \begin{column}{0.55\textwidth}
-}{%
-    \end{column}
-  \end{columns}
+    \begin{columns}
+      \begin{column}{0.55\textwidth}
+        \BODY
+      \end{column}
+    \end{columns}
   \end{frame}
   \endgroup
 }
 
 % -----------------------------------------------------------------------------
-% Default motto (can be overridden in user preamble via \UNIBASELmotto{...})
+% Closing slide and backup slides
 % -----------------------------------------------------------------------------
-\newcommand{\@UNIBASELmotto}{University of Basel}
-\newcommand{\UNIBASELmotto}[1]{\renewcommand{\@UNIBASELmotto}{#1}}
-
-% Backmatter slide
-\newcommand{\backmatter}{%
+% \backmatter          -> "Thanks! Questions?"
+% \backmatter[line]    -> adds a small-caps line underneath, e.g. arXiv:2505.16898
+\newcommand{\backmatter}[1][]{%
   \begingroup
   \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}{}
   \themecolor{mint}
-  \begin{frame}[c]
+  \begin{frame}[plain,c,noframenumbering]
     \centering
-    \usebeamerfont{title}\textbf{Thank you.}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}Thanks!\\Questions?\par}
+    \ifstrempty{#1}{}{%
+      \vspace{2ex}%
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\smallcapsline{#1}\par}%
+    }%
   \end{frame}
   \endgroup
+}
+
+% Backup slides live after the closing slide and must not inflate the count
+% shown in the footline.  Wrap them in \backupbegin ... \backupend.
+\newcounter{unibas@framenumberbackup}
+\newcommand{\backupbegin}{%
+  \setcounter{unibas@framenumberbackup}{\value{framenumber}}%
+}
+\newcommand{\backupend}{%
+  \setcounter{framenumber}{\value{unibas@framenumberbackup}}%
 }
